@@ -1,0 +1,21 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+def versions = [
+        junit5: "5.2.0",
+        assertj: "3.10.0"
+]
+dependencies {
+    testCompile("org.assertj:assertj-core:${versions.assertj}")
+
+    testCompile("org.junit.jupiter:junit-jupiter-api:${versions.junit5}")
+    testCompile("org.junit.jupiter:junit-jupiter-params:${versions.junit5}")
+    testRuntime("org.junit.jupiter:junit-jupiter-engine:${versions.junit5}")
+}
