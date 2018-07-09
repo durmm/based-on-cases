@@ -2,8 +2,13 @@ package com.github.durmm.collection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -56,11 +61,9 @@ class CustomListTest {
         void addSingleElementShouldAddElementIntoList() {
             List<String> list = create();
 
-            String expected = "a";
-            list.add(expected);
+            list.add("a");
 
-            String actual = list.get(0);
-            assertThat(actual).isEqualTo(expected);
+            assertThat(list).containsOnly("a");
         }
     }
 
@@ -247,7 +250,7 @@ class CustomListTest {
     @Nested
     class IteratorTest {
         @Test
-        void iteratorOnEmptyListShouldReturnFalseOnHasNext() {
+        void hasNextShouldReturnFalseOnEmptyList() {
             Iterator<Object> objectIterator = create().iterator();
             assumeThat(objectIterator).isNotNull();
 
@@ -255,12 +258,262 @@ class CustomListTest {
         }
 
         @Test
-        void iteratorShouldThrowWhenCallingNext() {
+        void nextShouldThrowWhenListIsEmpty() {
             Iterator<Object> objectIterator = create().iterator();
             assumeThat(objectIterator).isNotNull();
 
             assertThatExceptionOfType(NoSuchElementException.class)
                     .isThrownBy(objectIterator::next);
+        }
+
+        @Test
+        void nextShouldReturnElementsInSameOrder() {
+            List<Integer> list = create();
+
+            list.add(1);
+            list.add(2);
+            list.add(3);
+
+            Iterator<Integer> iterator = list.iterator();
+
+            assertThat(iterator.next()).isEqualTo(1);
+            assertThat(iterator.next()).isEqualTo(2);
+            assertThat(iterator.next()).isEqualTo(3);
+        }
+
+        @Test
+        void nextShouldThrowAfterLastElement() {
+            List<Integer> list = create();
+
+            list.add(1);
+            list.add(2);
+            list.add(3);
+
+            Iterator<Integer> iterator = list.iterator();
+
+            iterator.next(); // 1
+            iterator.next(); // 2
+            iterator.next(); // 3
+
+            assertThatExceptionOfType(NoSuchElementException.class)
+                    .isThrownBy(iterator::next);
+        }
+
+        @Test
+        void forEachRemainingFromStartShouldIterateOverAll() {
+            List<Integer> list = create();
+
+            list.add(1);
+            list.add(2);
+            list.add(3);
+
+            List<Integer> actual = new ArrayList<>();
+            Iterator<Integer> iterator = list.iterator();
+
+            iterator.forEachRemaining(actual::add);
+
+            assertThat(actual).containsExactly(1, 2, 3);
+        }
+
+        @Test
+        void forEachRemainingFromMiddleShouldIterateFromPosition() {
+            List<Integer> list = create();
+
+            list.add(1);
+            list.add(2);
+            list.add(3);
+
+            List<Integer> actual = new ArrayList<>();
+            Iterator<Integer> iterator = list.iterator();
+
+            iterator.next(); // pull out first element
+
+            iterator.forEachRemaining(actual::add);
+
+            assertThat(actual).containsExactly(2, 3);
+        }
+
+        @Test
+        void forEachRemainingShouldNotIterateWhenIteratorReachedEnd() {
+            List<Integer> list = create();
+
+            list.add(1);
+
+            List<Integer> actual = new ArrayList<>();
+            Iterator<Integer> iterator = list.iterator();
+
+            iterator.next(); // reached end
+
+            iterator.forEachRemaining(actual::add);
+
+            assertThat(actual).isEmpty();
+        }
+
+        @Test
+        void forEachRemainingOnEmptyList() {
+            List<Integer> list = create();
+
+            List<Integer> actual = new ArrayList<>();
+            Iterator<Integer> iterator = list.iterator();
+
+            iterator.forEachRemaining(actual::add);
+
+            assertThat(actual).isEmpty();
+        }
+
+        @Test
+        void removeShouldThrowWhenNextHasNotBeenCalledYet() {
+            List<Object> list = create();
+
+            Iterator<Object> iterator = list.iterator();
+
+            assertThatIllegalStateException()
+                    .isThrownBy(iterator::remove);
+        }
+
+        @Test
+        void removeShouldRemoveLastElement() {
+            List<Integer> list = create();
+
+            list.add(1);
+            list.add(2);
+
+            Iterator<Integer> iterator = list.iterator();
+
+            while (iterator.hasNext()) {
+                iterator.next();
+            }
+
+            iterator.remove();
+
+            assertThat(list).containsExactly(1);
+        }
+
+        @Test
+        void removeShouldRemoveFromMiddle() {
+            List<Integer> list = create();
+
+            list.add(1);
+            list.add(2);
+            list.add(3);
+
+            Iterator<Integer> iterator = list.iterator();
+
+            iterator.next(); // 1
+            iterator.next(); // 2
+
+            iterator.remove(); // remove 2
+
+            assertThat(list).containsExactly(1, 3);
+        }
+
+        @Test
+        void removeShouldRemoveFirstElement() {
+            List<Integer> list = create();
+
+            list.add(1);
+            list.add(2);
+            list.add(3);
+
+            Iterator<Integer> iterator = list.iterator();
+
+            iterator.next(); // 1
+
+            iterator.remove(); // remove 1
+
+            assertThat(list).containsExactly(2, 3);
+        }
+    }
+
+    @Nested
+    class BulkAdd {
+        @Test
+        void addAllShouldThrowWhenCollectionIsNull() {
+            List<Integer> list = create();
+
+            assertThatNullPointerException()
+                    .isThrownBy(() -> list.addAll(null));
+
+        }
+
+        @Test
+        void addAllFromIndexShouldCheckIndexFirstAndThenThrow() {
+            List<Integer> list = create();
+
+            assertThatExceptionOfType(IndexOutOfBoundsException.class)
+                    .isThrownBy(() -> list.addAll(1, null));
+
+        }
+
+        @Test
+        void addAllFromIndexShouldThrowWhenCollectionIsNull() {
+            List<Integer> list = create();
+            list.add(1);
+
+            assertThatNullPointerException()
+                    .isThrownBy(() -> list.addAll(0, null));
+        }
+
+        @Test
+        void addAllMultipleTimeShouldAppendAllCollections() {
+            List<Integer> list = create();
+
+            list.addAll(Arrays.asList(1, 2));
+            list.addAll(Arrays.asList(3, 4));
+            list.addAll(Arrays.asList(5, 6));
+
+            assertThat(list).containsExactly(1, 2, 3, 4, 5, 6);
+        }
+
+        @Test
+        void addAllFromCollectionShouldAppendItToExistingOne() {
+            List<Integer> list = create();
+
+            list.add(1);
+            list.add(2);
+            list.add(3);
+
+            list.addAll(Arrays.asList(4, 5, 6));
+
+            assertThat(list)
+                    .containsExactly(1, 2, 3, 4, 5, 6);
+        }
+    }
+
+    /**
+     * TODO: Please, explain details how and why this is happening.
+     */
+    @Nested
+    class ConcurrentModifications {
+        @Test
+        void shouldThrowWhenTwoIteratorsModifyingSameList() {
+            List<Integer> list = create();
+
+            list.add(1);
+            list.add(2);
+
+            Iterator<Integer> iterator1 = list.iterator();
+            Iterator<Integer> iterator2 = list.iterator();
+
+            // advance and remove
+            iterator1.next();
+            iterator1.remove();
+
+            // second iterator should throw exception because
+            // the first one already modified source list.
+            assertThatExceptionOfType(ConcurrentModificationException.class)
+                    .isThrownBy(iterator2::next);
+        }
+
+        @Test
+        void forEachShouldThrowExceptionWhenRemovingElementsFromIt() {
+            List<Integer> list = create();
+
+            list.add(1);
+            list.add(2);
+
+            assertThatExceptionOfType(ConcurrentModificationException.class)
+                    .isThrownBy(() -> list.forEach(list::remove));
         }
     }
 }
