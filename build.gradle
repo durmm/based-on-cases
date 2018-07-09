@@ -20,6 +20,10 @@ dependencies {
     testRuntime("org.junit.jupiter:junit-jupiter-engine:${versions.junit5}")
 }
 
+test {
+    useJUnitPlatform()
+}
+
 wrapper {
     gradleVersion "4.8.1"
 }
