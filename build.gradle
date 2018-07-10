@@ -15,7 +15,6 @@ def versions = [
 
 dependencies {
     testCompile("org.assertj:assertj-core:${versions.assertj}")
-
     testCompile("org.junit.jupiter:junit-jupiter-api:${versions.junit5}")
     testRuntime("org.junit.jupiter:junit-jupiter-engine:${versions.junit5}")
 }

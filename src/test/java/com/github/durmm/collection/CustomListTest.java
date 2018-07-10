@@ -6,12 +6,15 @@ import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -250,7 +253,7 @@ class CustomListTest {
         }
 
         @Test
-        void removeElementShouldIncreaseSize() {
+        void removeElementShouldDecreaseSize() {
             List<String> list = create();
 
             list.add("a");

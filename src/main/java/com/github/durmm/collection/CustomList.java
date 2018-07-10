@@ -15,14 +15,26 @@ import java.util.ListIterator;
  * @author Gaya Gyulnazaryan
  */
 public class CustomList<E> implements List<E> {
+
+    private Object[] array = new Object[16];
+    private int size;
+
+    private void extendArrayLength() {
+        Object[] newArray = new Object[array.length * 2];
+        for (int i = 0; i < array.length; i++) {
+            newArray[i] = array[i];
+        }
+        array = newArray;
+    }
+
     @Override
     public int size() {
-        return 0;
+        return size;
     }
 
     @Override
     public boolean isEmpty() {
-        return false;
+        return size() == 0;
     }
 
     @Override
@@ -47,7 +59,11 @@ public class CustomList<E> implements List<E> {
 
     @Override
     public boolean add(E e) {
-        return false;
+        if (size == array.length) {
+            extendArrayLength();
+        }
+        array[size++] = e;
+        return true;
     }
 
     @Override
@@ -85,9 +101,14 @@ public class CustomList<E> implements List<E> {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public E get(int index) {
-        return null;
+        if (index < 0 || index > size - 1) {
+            throw new IndexOutOfBoundsException();
+        }
+
+        return (E) array[index];
     }
 
     @Override
