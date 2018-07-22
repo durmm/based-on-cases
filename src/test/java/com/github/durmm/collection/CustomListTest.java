@@ -948,6 +948,15 @@ class CustomListTest {
         }
 
         @Test
+        void containsNotThrowingWhenListContainsNull() {
+            List<Integer> list = create();
+            list.add(null);
+            list.add(2);
+
+            list.contains(2);
+        }
+
+        @Test
         void containsShouldUseEqualsToTestEquality() {
             List<StringHolder> list = create();
             list.add(StringHolder.of("a"));
