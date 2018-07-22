@@ -11,7 +11,6 @@ import java.util.ListIterator;
  * TODO: Write proper documentation.
  *
  * @param <E> The type of elements in this list.
- *
  * @author Gaya Gyulnazaryan
  */
 public class CustomList<E> implements List<E> {
@@ -39,6 +38,15 @@ public class CustomList<E> implements List<E> {
 
     @Override
     public boolean contains(Object o) {
+        Object o1;
+        for (int i = 0; i < size; i++) {
+            o1 = array[i];
+            if (o1 == null && o == null) {
+                return true;
+            } else if (o1 != null && o1.equals(o)) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -73,6 +81,7 @@ public class CustomList<E> implements List<E> {
 
     @Override
     public boolean containsAll(Collection<?> c) {
+        //implement me please.
         return false;
     }
 
