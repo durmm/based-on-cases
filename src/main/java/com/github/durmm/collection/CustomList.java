@@ -76,13 +76,25 @@ public class CustomList<E> implements List<E> {
 
     @Override
     public boolean remove(Object o) {
+        if (!contains(o)) {
+            return false;
+        }
         return false;
     }
 
     @Override
     public boolean containsAll(Collection<?> c) {
-        //implement me please.
-        return false;
+        if (c == null) {
+            throw new NullPointerException("The collection cannot be null.");
+        }
+
+        for (Object o: c) {
+            if (!contains(o)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override
@@ -137,6 +149,7 @@ public class CustomList<E> implements List<E> {
 
     @Override
     public int indexOf(Object o) {
+
         return 0;
     }
 
